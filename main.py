@@ -2,7 +2,7 @@ import copy
 import random
 
 ALL_DIRECTIONS = [(-1, 1), (0, 1), (1, 1), (1, 0)]
-LINE_LENGTH_VALUE = {0: 0, 1: 0, 2: 3, 3: 10}
+LINE_LENGTH_VALUE = {0: 0, 1: 0, 2: 3, 3: 10}  # maybe change a bit
 
 
 class Board:
@@ -57,7 +57,7 @@ class Board:
 
     def get_line_length(self, origin: tuple[int, int], direction: tuple[int, int]):
         """
-        Checks how many of the same pieces are in the given line- without any of the second player.
+        Checks how many of the same pieces are in the given line- without any pieces of the second player.
         :param origin: The starting position of the line.
         :param direction: The direction the line goes in. Vector of the x,y change.
         :return: The number of same pieces in the given line. If there are pieces of the second player returns 0.
@@ -75,7 +75,7 @@ class Board:
                 value = self[tuple(pos)]
                 if value is player:
                     length += 1
-                elif value is not player:
+                elif value is (not player):
                     return 0
                 # o.w. value is None, so we add 0.
             else:
@@ -191,7 +191,7 @@ def play_against_ai(board, depth, you_start=True):
 if __name__ == '__main__':
     b = Board((7, 6))  # do not increase too much
     you_start = True
-    ai_moves_to_the_future = 7  # do not increase!!
+    ai_moves_to_the_future = 4  # do not increase too much!!
 
     print(f"moves: {','.join([str(x) for x in play_against_ai(b, ai_moves_to_the_future, you_start)])}")
     # b = Board((7, 6))
