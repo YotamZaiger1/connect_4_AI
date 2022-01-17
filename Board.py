@@ -3,28 +3,37 @@ LINE_LENGTH_VALUE = {0: 0, 1: 0, 2: 3, 3: 10}  # maybe change a bit
 
 
 class Board:
-    __slots__ = ["board", "available_cols", "size", "current_turn"]
-
     def __init__(self, size: tuple[int, int]):
-        self.board = [list() for _ in range(size[0])]
+        self.board = [[None for _ in range(size[1])] for _ in range(size[0])]
         self.available_cols = {i for i in range(size[0])}
+        self.piles_height = [0] * size[0]
         self.size = size
 
         self.current_turn = False
 
     def __getitem__(self, item: tuple[int, int]):
-        assert item[0] < self.size[0] and item[1] < self.size[1]
-        if item[1] >= len(self.board[item[0]]):
-            return None
         return self.board[item[0]][item[1]]
+
+    def __setitem__(self, key: tuple[int, int], value):
+        self.board[key[0]][key[1]] = value
 
     def turn(self, col: int):
         assert col in self.available_cols
-        self.board[col].append(self.current_turn)
+        self[col, self.piles_height[col]] = self.current_turn
 
-        if len(self.board[col]) == self.size[1]:  # column full
+        self.piles_height[col] += 1
+
+        if self.piles_height[col] == self.size[1]:  # column full
             self.available_cols.remove(col)
 
+        self.current_turn = not self.current_turn
+
+    def undo_tern(self, col: int):
+        assert self[col, self.piles_height[col] - 1] is not None
+
+        self.piles_height[col] -= 1
+        self.available_cols.add(col)
+        self[col, self.piles_height[col]] = None
         self.current_turn = not self.current_turn
 
     def __repr__(self):
@@ -38,8 +47,11 @@ class Board:
             row = self.size[1] - row - 1
             s = "|"
             for col in range(self.size[0]):
-                if len(self.board[col]) > row:
-                    s += "■" if self[col, row] else "□"
+                if self.piles_height[col] > row:
+                    if self[col, row]:
+                        s += "■"
+                    else:
+                        s += "□"
                 else:
                     s += " "
             s += "|"
@@ -60,7 +72,7 @@ class Board:
         :return: The number of same pieces in the given line. If there are pieces of the second player returns 0.
         """
         assert self[origin] is not None
-        player: bool = self[origin]
+        player = self[origin]
         pos: list[int] = list(origin)
         length = 1
 
@@ -88,7 +100,7 @@ class Board:
         f_value = 0  # the first player progress
         t_value = 0  # the second players progress
         for col in range(self.size[0]):
-            for row in range(len(self.board[col])):
+            for row in range(self.piles_height[col]):
                 player = self[col, row]
 
                 for direction in ALL_DIRECTIONS:

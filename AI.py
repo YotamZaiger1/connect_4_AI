@@ -1,4 +1,3 @@
-import copy
 import random
 
 from Board import Board
@@ -33,9 +32,10 @@ def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), m
     if maximizing_player:
         max_eval = -float('inf')
         for col in check_column_order:
-            new_board = copy.deepcopy(board)
-            new_board.turn(col)
-            evaluation = minimax(new_board, depth - 1, alpha, beta, maximizing_player=False)[0]
+            board.turn(col)
+            evaluation = minimax(board, depth - 1, alpha, beta, maximizing_player=False)[0]
+            board.undo_tern(col)
+
             if evaluation > max_eval:
                 max_eval = evaluation
                 move = col
@@ -48,9 +48,10 @@ def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), m
     else:
         min_eval = +float('inf')
         for col in check_column_order:
-            new_board = copy.deepcopy(board)
-            new_board.turn(col)
-            evaluation = minimax(new_board, depth - 1, alpha, beta, maximizing_player=True)[0]
+            board.turn(col)
+            evaluation = minimax(board, depth - 1, alpha, beta, maximizing_player=True)[0]
+            board.undo_tern(col)
+
             if evaluation < min_eval:
                 min_eval = evaluation
                 move = col
@@ -88,11 +89,12 @@ def play_against_ai(board, depth, you_start=True):
                     pass
 
         else:
-            col = best_move(board, depth, maximizing_player=not you_start)
+            best_val, col = minimax(board, depth, maximizing_player=not you_start)
             if col is None:
                 col = random.choice(list(board.available_cols))
                 print("(Random)")
             print(f"AI moved in column number {col}.")
+            print("best move value:", best_val)
 
         if col == 'c':
             break
