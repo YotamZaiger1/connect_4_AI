@@ -4,7 +4,11 @@ import random
 from Board import Board
 
 
-def best_move(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), maximizing_player=True):
+def best_move(board: Board, depth: int, maximizing_player=True):
+    return minimax(board, depth, alpha=-float('inf'), beta=+float('inf'), maximizing_player=maximizing_player)[1]
+
+
+def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), maximizing_player=True):
     """
     Calculate the best move to play using the minimax algorithm.
     This algorithm is fully deterministic but yet, because of time limits and irrational players, you can still lose a
@@ -21,13 +25,17 @@ def best_move(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'),
     if depth == 0 or abs(state_value) == float('inf'):  # 0 depth or game over
         return state_value, None
 
+    # randomize the order it checks moves to reduce the average time.
+    check_column_order = [i for i in board.available_cols]
+    random.shuffle(check_column_order)
+
     move = None
     if maximizing_player:
         max_eval = -float('inf')
-        for col in board.available_cols:
+        for col in check_column_order:
             new_board = copy.deepcopy(board)
             new_board.turn(col)
-            evaluation = best_move(new_board, depth - 1, alpha, beta, maximizing_player=False)[0]
+            evaluation = minimax(new_board, depth - 1, alpha, beta, maximizing_player=False)[0]
             if evaluation > max_eval:
                 max_eval = evaluation
                 move = col
@@ -39,10 +47,10 @@ def best_move(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'),
 
     else:
         min_eval = +float('inf')
-        for col in board.available_cols:
+        for col in check_column_order:
             new_board = copy.deepcopy(board)
             new_board.turn(col)
-            evaluation = best_move(new_board, depth - 1, alpha, beta, maximizing_player=True)[0]
+            evaluation = minimax(new_board, depth - 1, alpha, beta, maximizing_player=True)[0]
             if evaluation < min_eval:
                 min_eval = evaluation
                 move = col
@@ -80,7 +88,7 @@ def play_against_ai(board, depth, you_start=True):
                     pass
 
         else:
-            col = best_move(board, depth, maximizing_player=not you_start)[1]
+            col = best_move(board, depth, maximizing_player=not you_start)
             if col is None:
                 col = random.choice(list(board.available_cols))
                 print("(Random)")
