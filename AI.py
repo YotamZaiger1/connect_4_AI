@@ -98,6 +98,9 @@ def play_against_ai(board, depth, you_start=True):
 
         if col == 'c':
             break
+        if not board.available_cols:
+            print("Draw.")
+            break
         print(board.state_value())
         board.turn(col)
         history.append(col)
