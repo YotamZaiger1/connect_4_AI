@@ -3,10 +3,6 @@ import random
 from Board import Board
 
 
-def best_move(board: Board, depth: int, maximizing_player=True):
-    return minimax(board, depth, alpha=-float('inf'), beta=+float('inf'), maximizing_player=maximizing_player)[1]
-
-
 def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), maximizing_player=True):
     """
     Calculate the best move to play using the minimax algorithm.
@@ -21,55 +17,47 @@ def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), m
     :return: Best game-state that can be leaded to, The best move you can make, Depth the game ends in.
     """
     state_value = board.state_value()
-    if abs(state_value) == float('inf') or (not board.available_cols):  # game over
-        return state_value, None, 0
-
-    if depth == 0:  # end of recursion
-        return state_value, None, -float('inf')
+    if depth == 0 or abs(state_value) == float('inf') or (not board.available_cols):  # 0 depth or game over
+        return state_value, None
 
     # randomize the order it checks moves to reduce the average time.
     check_column_order = [i for i in board.available_cols]
     random.shuffle(check_column_order)
 
     move = None
-    move_end_game_depth = 0
     if maximizing_player:
         max_eval = -float('inf')
         for col in check_column_order:
             board.turn(col)
-            rec = minimax(board, depth - 1, alpha, beta, maximizing_player=False)
-            evaluation = rec[0]
+            evaluation = minimax(board, depth - 1, alpha, beta, maximizing_player=False)[0]
             board.undo_tern(col)
 
             if evaluation > max_eval:
                 max_eval = evaluation
                 move = col
-                move_end_game_depth = rec[2]
 
             alpha = max(alpha, evaluation)
             if beta <= alpha:
                 break
 
-        return max_eval, move, move_end_game_depth + 1
+        return max_eval, move
 
     else:
         min_eval = +float('inf')
         for col in check_column_order:
             board.turn(col)
-            rec = minimax(board, depth - 1, alpha, beta, maximizing_player=True)
-            evaluation = rec[0]
+            evaluation = minimax(board, depth - 1, alpha, beta, maximizing_player=True)[0]
             board.undo_tern(col)
 
             if evaluation < min_eval:
                 min_eval = evaluation
                 move = col
-                move_end_game_depth = rec[2]
 
             beta = min(beta, evaluation)
             if beta <= alpha:
                 break
 
-        return min_eval, move, move_end_game_depth + 1
+        return min_eval, move
 
 
 def play_against_ai(board, depth, you_start=True):
@@ -81,7 +69,7 @@ def play_against_ai(board, depth, you_start=True):
             if board.current_turn == you_start:
                 print("Congratulations! You won!")
             else:
-                print("AI won. :(")
+                print("AI won.")
             break
 
         if board.current_turn != you_start:
@@ -99,7 +87,7 @@ def play_against_ai(board, depth, you_start=True):
                     pass
 
         else:
-            best_val, col, time_till_end = minimax(board, depth, maximizing_player=not you_start)
+            best_val, col = minimax(board, depth, maximizing_player=not you_start)
             if col is None:
                 col = random.choice(list(board.available_cols))
                 print("(Random)")
@@ -111,7 +99,7 @@ def play_against_ai(board, depth, you_start=True):
         if not board.available_cols:
             print("Draw.")
             break
-        print(board.state_value())
+
         board.turn(col)
         history.append(col)
         print(board.state_value())
