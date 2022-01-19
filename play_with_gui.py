@@ -18,7 +18,7 @@ OPACITY_YELLOW = (255, 255, 0, OPACITY)
 def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=False, wait_between_turns=500):
     if board is None:
         board = Board((7, 6))
-    
+
     pygame.init()
     size = (cell_width * board.size[0], cell_width * board.size[1])
     screen = pygame.display.set_mode(size)
@@ -77,7 +77,7 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
                         best_game_state, best_move = minimax(board, ai_depth, maximizing_player=ai_starts)
                         pygame.display.set_caption("Connect 4")
                         if best_move is None:
-                            best_move = random.choice(board.available_cols)
+                            best_move = random.choice(list(board.available_cols))
                             print("AI chose randomly")
                         print(best_game_state, best_move)
                         draw_piece(surface, current_color, best_move, board.piles_height[best_move],
