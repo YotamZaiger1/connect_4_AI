@@ -16,6 +16,7 @@ OPACITY_YELLOW = (255, 255, 0, OPACITY)
 
 
 def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=False, wait_between_turns=500):
+    print()
     if board is None:
         board = Board((7, 6))
 
@@ -55,15 +56,21 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if mouse_on_column in board.available_cols and game_on:
+                    print()
                     draw_piece(surface, current_color, mouse_on_column, board.piles_height[mouse_on_column], cell_width,
                                board.size[1])
                     board.turn(mouse_on_column)
                     current_color = RED if current_color == YELLOW else YELLOW
                     current_opacity_color = OPACITY_RED if current_opacity_color == OPACITY_YELLOW else OPACITY_YELLOW
                     update_screen(screen, background, surface)
+                    if not board.available_cols:
+                        print("Draw")
+                        game_on = False
                     pygame.time.wait(wait_between_turns)
 
-                    if abs(board.state_value()) == float('inf'):
+                    value = board.state_value()
+                    print("game value:", value)
+                    if abs(value) == float('inf'):
                         game_on = False
                         if ai:
                             print("GAME OVER- You Won")
@@ -72,14 +79,16 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
                             print("Game Over")
                             pygame.display.set_caption("Connect 4: GAME OVER")
 
-                    elif ai:
+                    if game_on and ai:
+                        print()
                         pygame.display.set_caption("Connect 4: AI Thinking...")
                         best_game_state, best_move = minimax(board, ai_depth, maximizing_player=ai_starts)
                         pygame.display.set_caption("Connect 4")
                         if best_move is None:
                             best_move = random.choice(list(board.available_cols))
                             print("AI chose randomly")
-                        print(best_game_state, best_move)
+                        print("AI moved in column number", best_move + 1)
+                        print("Worst expected game value:", best_game_state)
                         draw_piece(surface, current_color, best_move, board.piles_height[best_move],
                                    cell_width,
                                    board.size[1])
@@ -88,10 +97,16 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
                         current_color = RED if current_color == YELLOW else YELLOW
                         current_opacity_color = OPACITY_RED if current_opacity_color == OPACITY_YELLOW else OPACITY_YELLOW
                         update_screen(screen, background, surface)
-                        if abs(board.state_value()) == float('inf'):
+
+                        value = board.state_value()
+                        print("Current game value:", value)
+                        if abs(value) == float('inf'):
                             game_on = False
                             pygame.display.set_caption("Connect 4: GAME OVER- AI Won")
                             print("GAME OVER- AI won")
+                        if not board.available_cols:
+                            print("Draw")
+                            game_on = False
                         pygame.time.wait(wait_between_turns)
 
         if game_on:
@@ -109,7 +124,7 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
 def draw_piece(surface, color, col, row, cell_width, board_height):
     row = board_height - row
     pygame.draw.circle(surface, color, (col * cell_width + cell_width // 2, row * cell_width - cell_width // 2),
-                       cell_width * 2 / 5)
+                       cell_width * 2 // 5)
 
 
 def update_screen(screen, background, surface):
