@@ -1,5 +1,5 @@
 from AI import play_against_ai
-from Board import Board
+from Board import Board, Score
 from play_with_gui import play
 
 
@@ -28,7 +28,11 @@ def main(*_):
     # # [3, 0, 4, 0, 5, 0]
     # # [3, 0, 2, 1, 3, 0, 4, 5, 1, 0, 0, 2, 3, 3, 6, 0, 5, 0, 4]
     # # [3, 0, 2, 1, 3, 0, 4, 5, 1, 0, 0, 2, 3, 3, 6, 0, 5, 0, 4, 6, 4]
-    play(Board((7, 7)), cell_width=100, ai=True, ai_starts=False, ai_depth=5, wait_between_turns=0)
+    print(play(Board((7, 6)), cell_width=100, ai=True, ai_starts=True, ai_depth=7, wait_between_turns=0))
+
+    a = Score(5, False)
+    b = Score(2, False)
+    print(a <= b)
 
 
 if __name__ == '__main__':

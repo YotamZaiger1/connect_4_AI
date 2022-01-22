@@ -1,9 +1,10 @@
 import random
 
-from Board import Board
+from Board import Board, Score
 
 
-def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), maximizing_player=True):
+def minimax(board: Board, depth: int, alpha=Score(-float('inf'), is_infinite=True),
+            beta=Score(+float('inf'), is_infinite=True), maximizing_player=True):
     """
     Calculate the best move to play using the minimax algorithm.
     This algorithm is fully deterministic but yet, because of time limits and irrational players, you can still lose a
@@ -17,7 +18,7 @@ def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), m
     :return: Best game-state that can be leaded to, The best move you can make, Depth the game ends in.
     """
     state_value = board.state_value()
-    if depth == 0 or abs(state_value) == float('inf') or (not board.available_cols):  # 0 depth or game over
+    if depth == 0 or state_value.is_infinite or (not board.available_cols):  # 0 depth or game over
         return state_value, None
 
     # randomize the order it checks moves to reduce the average time.
@@ -26,7 +27,7 @@ def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), m
 
     move = None
     if maximizing_player:
-        max_eval = -float('inf')
+        max_eval = Score(-float('inf'), is_infinite=True)
         for col in check_column_order:
             board.turn(col)
             evaluation = minimax(board, depth - 1, alpha, beta, maximizing_player=False)[0]
@@ -43,7 +44,7 @@ def minimax(board: Board, depth: int, alpha=-float('inf'), beta=+float('inf'), m
         return max_eval, move
 
     else:
-        min_eval = +float('inf')
+        min_eval = Score(+float('inf'), is_infinite=True)
         for col in check_column_order:
             board.turn(col)
             evaluation = minimax(board, depth - 1, alpha, beta, maximizing_player=True)[0]
@@ -65,11 +66,15 @@ def play_against_ai(board, depth, you_start=True):
     while True:
         board.printb()
         value = board.state_value()
-        if abs(value) == float('inf'):
+        print(board.state_value())
+        if value.is_infinite:
             if board.current_turn == you_start:
                 print("Congratulations! You won!")
             else:
                 print("AI won.")
+            break
+        elif not board.available_cols:
+            print("Draw.")
             break
 
         if board.current_turn != you_start:
@@ -96,12 +101,8 @@ def play_against_ai(board, depth, you_start=True):
 
         if col == 'c':
             break
-        if not board.available_cols:
-            print("Draw.")
-            break
 
         board.turn(col)
         history.append(col)
-        print(board.state_value())
 
     return history

@@ -16,6 +16,7 @@ OPACITY_YELLOW = (255, 255, 0, OPACITY)
 
 
 def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=False, wait_between_turns=500):
+    history = []
     print()
     if board is None:
         board = Board((7, 6))
@@ -42,7 +43,10 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
 
     if ai_starts and ai:
         best_game_state, best_move = minimax(board, ai_depth, maximizing_player=ai_starts)
-        print(best_game_state, best_move)
+        print("AI moved in column number", best_move + 1)
+        print("Worst expected game value:", best_game_state)
+        value = board.state_value()
+        print("Current game value:", value)
         draw_piece(surface, RED, best_move, board.piles_height[best_move], cell_width,
                    board.size[1])
         board.turn(best_move)
@@ -59,18 +63,15 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
                     print()
                     draw_piece(surface, current_color, mouse_on_column, board.piles_height[mouse_on_column], cell_width,
                                board.size[1])
+                    history.append(mouse_on_column)
                     board.turn(mouse_on_column)
                     current_color = RED if current_color == YELLOW else YELLOW
                     current_opacity_color = OPACITY_RED if current_opacity_color == OPACITY_YELLOW else OPACITY_YELLOW
                     update_screen(screen, background, surface)
-                    if not board.available_cols:
-                        print("Draw")
-                        game_on = False
-                    pygame.time.wait(wait_between_turns)
 
                     value = board.state_value()
                     print("game value:", value)
-                    if abs(value) == float('inf'):
+                    if value.is_infinite:
                         game_on = False
                         if ai:
                             print("GAME OVER- You Won")
@@ -78,6 +79,10 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
                         else:
                             print("Game Over")
                             pygame.display.set_caption("Connect 4: GAME OVER")
+                    elif not board.available_cols:
+                        print("Draw")
+                        game_on = False
+                    pygame.time.wait(wait_between_turns)
 
                     if game_on and ai:
                         print()
@@ -93,6 +98,7 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
                                    cell_width,
                                    board.size[1])
 
+                        history.append(best_move)
                         board.turn(best_move)
                         current_color = RED if current_color == YELLOW else YELLOW
                         current_opacity_color = OPACITY_RED if current_opacity_color == OPACITY_YELLOW else OPACITY_YELLOW
@@ -100,11 +106,11 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
 
                         value = board.state_value()
                         print("Current game value:", value)
-                        if abs(value) == float('inf'):
+                        if value.is_infinite:
                             game_on = False
                             pygame.display.set_caption("Connect 4: GAME OVER- AI Won")
                             print("GAME OVER- AI won")
-                        if not board.available_cols:
+                        elif not board.available_cols:
                             print("Draw")
                             game_on = False
                         pygame.time.wait(wait_between_turns)
@@ -119,6 +125,8 @@ def play(board: Board = None, cell_width=50, ai=False, ai_depth=7, ai_starts=Fal
                         draw_piece(surface, (0, 0, 0, 0), i, board.piles_height[i], cell_width, board.size[1])
 
         update_screen(screen, background, surface)
+
+    return history
 
 
 def draw_piece(surface, color, col, row, cell_width, board_height):
